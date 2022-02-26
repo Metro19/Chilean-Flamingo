@@ -17,10 +17,14 @@ class drive_import_cog(commands.Cog):
         :return:
         """
         str_thing = ""
-        messages = await ctx.message.channel.history(limit=500).flatten()
-        for message in messages:
-            str_thing += message.author.nick + ": "
+        messages = await ctx.channel.history(limit=500).flatten()
+
+        for message in messages[::-1]:
+            print(message)
+            str_thing += message.author.display_name + ": "
             str_thing += message.content + "\n"
+
+        await ctx.send(str_thing)
 
 
 def setup(bot: commands.Bot):
