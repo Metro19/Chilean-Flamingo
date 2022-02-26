@@ -5,7 +5,7 @@ from discord.ext import commands
 
 # setup bot
 bot = commands.Bot(command_prefix="$")
-guild_ids = []
+guild_ids = [947170492769521675]
 
 
 @bot.event
@@ -17,5 +17,5 @@ async def on_ready():
     print(f"Logged in as {bot.user}")
 
 # finish setup
-bot.load_extension("cogs.DriveImport")
+bot.load_extension("cogs.drive_import")
 bot.run(os.environ["DISCORD_TOKEN"])
