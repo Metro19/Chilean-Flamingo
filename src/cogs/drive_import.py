@@ -38,7 +38,7 @@ class drive_import_cog(commands.Cog):
                 index2 = len(str_message) + 1
                 str_message += " (" + time.strftime(format("%m/%d/%Y")) + ") " + \
                                message.created_at.strftime("%H:%M:%S")
-                ital_list.append((index2, len(str_message)))
+                ital_list.append((index2, len(str_message) + 1))
                 str_message += " - "
 
                 for attachment in message.attachments:

@@ -1,7 +1,6 @@
 import datetime
 import os
 
-# TODO: Optimize imports
 from dataclasses import dataclass
 
 from sqlalchemy.orm import sessionmaker, Session

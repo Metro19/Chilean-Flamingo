@@ -12,7 +12,6 @@ from src.main import guild_ids
 from src.db import meeting, channel
 import src.db as db
 
-AWAIT_ASSIGNMENT_CHANNEL = 947458250394189854
 
 def meeting_sort(mtgs: list[meeting]) -> list[meeting]:
     """Organize meetings by start time
