@@ -24,14 +24,11 @@ class sheets_import_cog(commands.Cog):
         # pulling the column of the google sheet
         string_id_array = sheets.pull_column()
 
-        array_ids = ""
         # looping through the DiscordIds and printing them to the chat one by one
         for x in string_id_array:
             x = x.value.strip()
             name, discrim = x.split("#")
-            array_ids += str(discord.utils.get(self.bot.get_all_members(), name=name, discriminator=discrim).id)
-            # await ctx.respond(discord.utils.get(self.bot.get_all_members(), name=name, discriminator=discrim))
-        await ctx.respond(array_ids)
+            await ctx.respond(discord.utils.get(self.bot.get_all_members(), name=name, discriminator=discrim))
 
 
 def setup(bot: commands.Bot):
