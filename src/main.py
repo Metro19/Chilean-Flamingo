@@ -20,5 +20,6 @@ async def on_ready():
 
 # finish setup
 bot.load_extension("cogs.drive_import")
-bot.load_extension("cogs.MeetingInformation")
+bot.load_extension("cogs.meeting_information")
+bot.load_extension("cogs.dm_role")
 bot.run(os.environ["DISCORD_TOKEN"])
