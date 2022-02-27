@@ -191,9 +191,9 @@ class meeting_cogs(commands.Cog):
                 # pass to db
                 db.adjust_meeting(meet)
 
-                ctx.respond(embed=create_meeting_embed("Time adjusted!", meet))
+                await ctx.respond(embed=create_meeting_embed("Time adjusted!", meet))
 
-        ctx.respond("Meeting ID not found!")
+        await ctx.respond("Meeting ID not found!")
 
     @meeting.command(guild_ids=guild_ids, name="view_meeting")
     async def view_meeting(self, ctx,
@@ -208,10 +208,10 @@ class meeting_cogs(commands.Cog):
         # find meeting
         for meet in self.meetings:
             if meet.id == id:
-                ctx.respond(embed=create_meeting_embed("Meeting:", meet))
+                await ctx.respond(embed=create_meeting_embed("Meeting:", meet))
 
         # meeting not found
-        ctx.respond("Meeting ID not found!")
+        await ctx.respond("Meeting ID not found!")
 
     @meeting.command(guild_ids=guild_ids, name="change_name")
     async def change_name(self, ctx,
@@ -233,9 +233,9 @@ class meeting_cogs(commands.Cog):
                 # pass to db
                 db.adjust_meeting(meet)
 
-                ctx.respond(embed=create_meeting_embed("Name adjusted!", meet))
+                await ctx.respond(embed=create_meeting_embed("Name adjusted!", meet))
 
-        ctx.respond("Meeting ID not found!")
+        await ctx.respond("Meeting ID not found!")
 
 
 def setup(bot: commands.Bot):

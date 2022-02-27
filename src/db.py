@@ -12,7 +12,7 @@ import uuid
 
 from src.config import SQL_ADDRESS
 
-engine = sqlalchemy.create_engine(os.environ["DB_URL"])
+engine = sqlalchemy.create_engine(SQL_ADDRESS)
 
 
 @dataclass()
