@@ -50,17 +50,14 @@ def input_doc(str_import, channel_name, bold_list, ital_list):
     except HttpError as err:
         print(err)
 
+    # creating the doc
     service = build('docs', 'v1', credentials=creds)
     body = {
         'title': channel_name + " (" + time.strftime(format("%m/%d/%Y")) + ")"
     }
     doc = service.documents().create(body=body).execute()
     docID = doc.get('documentId')
-    print('Created document with title: {0}'.format(
-        doc.get('title')))
 
-    loc = 1
-    loc += 1000
     requests = [
         {
             'insertText': {
@@ -71,12 +68,11 @@ def input_doc(str_import, channel_name, bold_list, ital_list):
             }
         }
     ]
-    print(len(str_import))
+    # editing the doc and adding the conversation text
     adding = service.documents().batchUpdate(documentId=docID, body={'requests': requests}).execute()
 
-
+    # editing the text to make the username bold
     formattingList = []
-
     for b in bold_list:
         formattingList.append({
             'updateTextStyle': {
@@ -92,6 +88,7 @@ def input_doc(str_import, channel_name, bold_list, ital_list):
         })
     adding = service.documents().batchUpdate(documentId=docID, body={'requests': formattingList}).execute()
 
+    # editing the text to make date/time italic
     formattingList = []
     for i in ital_list:
         formattingList.append({

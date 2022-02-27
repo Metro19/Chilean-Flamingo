@@ -1,5 +1,5 @@
 import discord
-from discord import SlashCommandGroup, Option
+from discord import SlashCommandGroup, Option, message
 from discord.ext import commands
 from discord.commands import slash_command
 
@@ -20,12 +20,15 @@ class DMRoleCog(commands.Cog):
         :param role: Role selected
         :return:
         """
-        pass
+        if message.content == "dm":
+            await message.channel.send("Dming user")
+            dm = await message.author.create_dm()  # Creates a dm channel with the user
+            await dm.send("What you want to send")  # Sends the user the message
 
 
 def setup(bot: commands.Bot):
-    """Set up the bot
-
+    """
+    Set up the bot
     :param bot:
     :return:
     """

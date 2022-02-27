@@ -19,28 +19,34 @@ class drive_import_cog(commands.Cog):
         :param ctx:
         :return:
         """
-        str_thing = ""
+        # empty string that will be the files to print
+        str_message = ""
+        # getting the entire channel dialog
         messages = await ctx.channel.history(limit=500).flatten()
         bold_list = []
         ital_list = []
 
+        # looping through the messages in reverse to print in correct order
         for message in messages[::-1]:
+            # only adding if it was a message from a user.
+            # messages from bots and the system are skipped
             if not message.is_system() and not message.author.bot:
-                inex = len(str_thing)
-                str_thing += message.author.display_name
-                bold_list.append((inex, len(str_thing)+1))
-                index2 = len(str_thing)+1
-                str_thing += " (" + time.strftime(format("%m/%d/%Y")) + ") " + \
-                             message.created_at.strftime("%H:%M:%S")
-                ital_list.append((index2, len(str_thing)))
-                str_thing += " - "
-                str_thing += message.content + "\n"
+                inex = len(str_message)
+                str_message += message.author.display_name
+                bold_list.append((inex, len(str_message) + 1))
+                index2 = len(str_message) + 1
+                str_message += " (" + time.strftime(format("%m/%d/%Y")) + ") " + \
+                               message.created_at.strftime("%H:%M:%S")
+                ital_list.append((index2, len(str_message)))
+                str_message += " - "
+                str_message += message.content + "\n"
 
-        drive.input_doc(str_thing, ctx.channel.name, bold_list, ital_list)
+        # calling the creation of the doc
+        drive.input_doc(str_message, ctx.channel.name, bold_list, ital_list)
+
+        # code has run successfully
         await ctx.respond("Successfully Saved!")
 
 
 def setup(bot: commands.Bot):
     bot.add_cog(drive_import_cog(bot))
-
-
