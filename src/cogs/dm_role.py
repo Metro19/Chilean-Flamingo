@@ -15,14 +15,23 @@ class dm_role_cog(commands.Cog):
 
     @slash_command(name="dm_all_with_role", guild_ids=guild_ids)
     async def dm_all_with_role(self, ctx: discord.Message,
-                               role: Option(discord.Role, name="role", description="Select a role")):
+                               role: Option(discord.Role, name="role", description="Select a role"),
+                               msg: Option(str, name="message", description="Message to send all users")):
         """DM everyone with a role
 
+        :param msg:
         :param ctx: Message calling the command
         :param role: Role selected
         :return:
         """
-        await ctx.respond(role.name)
+        # looping through the members and messaging them
+        count = 0
+        for r in role.members:
+            if not r.bot:
+                count += 1
+                await r.send(msg)
+        await ctx.respond("Sent out " + str(count) + " messages")
+
 
 
 def setup(bot: commands.Bot):

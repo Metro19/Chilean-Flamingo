@@ -6,7 +6,10 @@ import discord
 from discord.ext import commands
 
 # setup bot
-bot = commands.Bot(command_prefix="$")
+
+intents = discord.Intents.default()
+intents.members = True
+bot = commands.Bot(command_prefix="$", intents=intents)
 guild_ids = [947170492769521675]
 
 
@@ -20,6 +23,7 @@ async def on_ready():
 
 # finish setup
 bot.load_extension("cogs.drive_import")
-bot.load_extension("cogs.meeting_information")
+#bot.load_extension("cogs.meeting_information")
 bot.load_extension("cogs.dm_role")
+bot.load_extension("cogs.sheets_import")
 bot.run(os.environ["DISCORD_TOKEN"])
