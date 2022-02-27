@@ -3,7 +3,7 @@ from google.oauth2 import credentials
 
 SCOPES = ['https://www.googleapis.com/auth/sheets']
 
-ROW_CHAR = "C"
+COL_CHAR = "C"
 
 pygsheets_authorize = pygsheets.authorize()
 
@@ -15,7 +15,7 @@ def pull_column():
 
     # reading in the column of the sheet
     cell_num = 2
-    cell_location = ROW_CHAR + str(cell_num)
+    cell_location = COL_CHAR + str(cell_num)
     cell_array = []
     for x in wks:
         if wks.cell(cell_location).value == "\n":
@@ -23,6 +23,6 @@ def pull_column():
         else:
             cell_array.append(wks.cell(cell_location))
         cell_num += 1
-        cell_location = ROW_CHAR + str(cell_num)
+        cell_location = COL_CHAR + str(cell_num)
 
     return cell_array
