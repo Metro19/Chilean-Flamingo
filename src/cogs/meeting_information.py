@@ -1,3 +1,4 @@
+import asyncio
 import operator
 
 import discord
@@ -8,9 +9,10 @@ from discord.ext import commands
 from discord.commands import slash_command
 
 from src.main import guild_ids
-from src.db import meeting
+from src.db import meeting, channel
 import src.db as db
 
+AWAIT_ASSIGNMENT_CHANNEL = 947458250394189854
 
 def meeting_sort(mtgs: list[meeting]) -> list[meeting]:
     """Organize meetings by start time
@@ -18,10 +20,10 @@ def meeting_sort(mtgs: list[meeting]) -> list[meeting]:
     :param mtgs: List of unorganized meetings
     :return: Organized list of meetings
     """
-    return sorted(mtgs, key=operator.attrgetter("time"))
+    return sorted(mtgs, key=operator.attrgetter("time"), reverse=True)
 
 
-def create_meeting_embed(self, message: str, mtg: meeting) -> discord.Embed:
+def create_meeting_embed(message: str, mtg: meeting) -> discord.Embed:
     """Create a meeting embed for after a meeting operation
 
     :param message: Message to accompany embed
@@ -30,7 +32,7 @@ def create_meeting_embed(self, message: str, mtg: meeting) -> discord.Embed:
     """
 
     # create the embed
-    emb = discord.Embed(title="Meeting created!")
+    emb = discord.Embed(title=message)
     emb.add_field(name="Meeting ID:", value=mtg.id, inline=False)
     emb.add_field(name="Meeting Name:", value=mtg.name, inline=False)
     emb.add_field(name="Time:", value=mtg.time.strftime("%m/%d/%Y %H:%M:%S"), inline=False)
@@ -40,12 +42,42 @@ def create_meeting_embed(self, message: str, mtg: meeting) -> discord.Embed:
     return emb
 
 
-def allocate_meetings(
+def allocate_meetings(meetings: list[meeting], channels: list[channel]):
+    """Allocate meetings to channel"""
+    mtg_copy = meetings.copy()
 
-# initial vars
-channels = {}
-meetings: list[meeting] = meeting_sort(db.load_all_meetings())
-print(meetings)
+    # unallocated all channels
+    for chnl in channels:
+        chnl.allocated = []
+
+    # check for zero channels
+    if len(channels) > 0:
+        # assign to each channel one at a time
+        count = 0
+        while len(mtg_copy) > 0:
+            channels[count % len(channels)].allocated.append(mtg_copy.pop())
+            count += 1
+
+
+def upcoming_meeting_embed(mtg: meeting) -> discord.Embed:
+    """Generate an embed for an upcoming meeting
+
+    :param mtg: Meeting to send information about
+    :return: Completed embed
+    """
+    # format datetime
+    current_time = datetime.now()
+    diff_time: timedelta = mtg.time - current_time
+    diff_time_string = str(diff_time.days) + "D " + str(diff_time.seconds) + "S"
+
+    # create embed
+    emb = discord.Embed(title="Upcoming Meeting:")
+    emb.add_field(name="Meeting Name:", value=mtg.name, inline=False)
+    emb.add_field(name="Time:", value=mtg.time.strftime("%m/%d/%Y %H:%M:%S"), inline=False)
+    emb.add_field(name="In:", value=diff_time_string, inline=False)
+    emb.add_field(name="Users", value=str(len(mtg.users)) + " user(s) associated.", inline=False)
+    emb.set_footer(text="Meeting ID: " + str(mtg.id))
+    return emb
 
 
 class meeting_cogs(commands.Cog):
@@ -54,9 +86,42 @@ class meeting_cogs(commands.Cog):
     def __init__(self, bot):
         super().__init__()
         self.bot: discord.Bot = bot
+        self.channels: list[channel] = db.load_all_channels()
+        self.meetings: list[meeting] = meeting_sort(db.load_all_meetings())
 
     # create a slash command group
     meeting = SlashCommandGroup("meeting", "Manage and create meetings.", guild_ids=guild_ids)
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.bot.wait_until_ready()
+        # setup meetings
+        print(self.meetings)
+        allocate_meetings(self.meetings, self.channels)
+        await self.send_upcoming_meeting(self.channels)
+
+    async def send_upcoming_meeting(self, chnl) -> list[channel]:
+        """Add upcoming meeting information to the channels
+
+        :param chnl: Channels to add allocate
+        :return:
+        """
+
+        # iter through channels
+        for c in chnl:
+            # check if channel is out of control
+            if c.status:
+                # create channel object
+                print(c.id)
+                channel_loc = await self.bot.fetch_channel(c.id)
+                print(channel_loc)
+
+                # clear channel
+                await channel_loc.purge()
+
+                # print all meeting information
+                for mtg in c.allocated:
+                    await channel_loc.send(embed=upcoming_meeting_embed(mtg))
 
     @meeting.command(guild_ids=guild_ids, name="new_meeting")
     async def new_meeting(self, ctx,
@@ -87,6 +152,14 @@ class meeting_cogs(commands.Cog):
 
         await ctx.respond(embed=emb)
 
+    @meeting.command(guild_ids=guild_ids, name="new_meeting_channel")
+    async def new_meeting_channel(self, ctx):
+        self.channels.append(db.create_channel(ctx.channel.id, True))
+
+        # reset all allocations
+        allocate_meetings()
+        send_upcoming_meeting(self.channels)
+
     @meeting.command(guild_ids=guild_ids, name="change_time")
     async def change_time(self, ctx,
                           id: Option(str, name="meeting_id"),
@@ -111,7 +184,7 @@ class meeting_cogs(commands.Cog):
         time_obj = datetime(year, month, day, hour, minute, 0, 0, timezone(timedelta(0)))
 
         # find meeting
-        for meet in meetings:
+        for meet in self.meetings:
             if meet.id == id:
                 meet.time = time_obj
 
@@ -133,7 +206,7 @@ class meeting_cogs(commands.Cog):
         """
 
         # find meeting
-        for meet in meetings:
+        for meet in self.meetings:
             if meet.id == id:
                 ctx.respond(embed=create_meeting_embed("Meeting:", meet))
 
@@ -153,7 +226,7 @@ class meeting_cogs(commands.Cog):
         """
 
         # find meeting
-        for meet in meetings:
+        for meet in self.meetings:
             if meet.id == id:
                 meet.name = name
 

@@ -5,12 +5,12 @@ import os
 from dataclasses import dataclass
 
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.sql import exists
 import sqlalchemy
 from sqlalchemy import text, column, table
+
 import uuid
-from sqlalchemy.pool import StaticPool
-import psycopg2
+
+from src.config import SQL_ADDRESS
 
 engine = sqlalchemy.create_engine(os.environ["DB_URL"])
 
@@ -26,10 +26,11 @@ class meeting:
 
 
 @dataclass()
-class meeting_channel:
+class channel:
     """Store the information about a meeting channel"""
     id: int
     status: bool
+    allocated: list[meeting]
 
 
 def unflatten_users(users: str) -> list[int]:
@@ -69,7 +70,7 @@ def create_meeting(name: str, dt: datetime.datetime, users: list[int]) -> meetin
     :param name: Human readable db name
     :param dt: Unix stamp of the meeting
     :param users: String list of user id(s) in the meeting
-    :return: ID of the meeting
+    :return: Meeting object
     """
     uid = str(uuid.uuid4())
 
@@ -82,6 +83,25 @@ def create_meeting(name: str, dt: datetime.datetime, users: list[int]) -> meetin
 
     # return meeting dataclass
     return meeting(uid, name, dt, users, "")
+
+
+def create_channel(channel_id: int, status: bool) -> channel:
+    """Create a meeting channel in the database
+
+    :param channel_id: Discord channel id
+    :param status: Status of the channel
+    :return: ID of the meeting
+    """
+
+    # do transaction
+    with engine.connect() as conn:
+        trans = conn.begin()
+        conn.execute(text("INSERT INTO meeting_channels (channel, status) VALUES (:id, :status)"),
+                     [{"id": channel_id, "status": status}])
+        trans.commit()
+
+    # return meeting dataclass
+    return channel(channel_id, status, [])
 
 
 def adjust_meeting(meeting_obj: meeting) -> bool:
@@ -128,7 +148,7 @@ def load_all_meetings() -> list[meeting]:
         return meetings
 
 
-def load_all_meeting_ids() -> list[meeting_channel]:
+def load_all_channels() -> list[channel]:
     """Load all meeting_channels from the db
 
     :return: List of meeting objects
@@ -142,7 +162,7 @@ def load_all_meeting_ids() -> list[meeting_channel]:
 
         # iterate through rows
         for r in rows:
-            new_meeting = meeting_channel(r.id, r.status)
+            new_meeting = channel(r.channel, r.status, [])
             meetings.append(new_meeting)
 
         return meetings
