@@ -5,6 +5,7 @@ from discord.commands import slash_command
 
 from src.main import guild_ids
 
+
 class dm_role_cog(commands.Cog):
     """Cogs that manage the direct messaging of everyone with a role"""
 
