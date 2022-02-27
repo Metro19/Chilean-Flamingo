@@ -8,7 +8,7 @@ from src.config import GUILD_IDS, DISCORD_TOKEN
 logging.basicConfig(level=logging.DEBUG)
 
 # setup bot
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="$", intents=intents)
 guild_ids = GUILD_IDS
 
@@ -25,5 +25,5 @@ async def on_ready():
 bot.load_extension("cogs.drive_import")
 bot.load_extension("cogs.meeting_information")
 bot.load_extension("cogs.dm_role")
-# bot.load_extension("cogs.sheets_import")
+#bot.load_extension("cogs.sheets_import")
 bot.run(DISCORD_TOKEN)
