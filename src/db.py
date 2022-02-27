@@ -2,7 +2,7 @@ import datetime
 import os
 
 # TODO: Optimize imports
-from cogs.meeting_information import meeting
+from dataclasses import dataclass
 
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.sql import exists
@@ -13,6 +13,23 @@ from sqlalchemy.pool import StaticPool
 import psycopg2
 
 engine = sqlalchemy.create_engine(os.environ["DB_URL"])
+
+
+@dataclass()
+class meeting:
+    """Store the information about a meeting"""
+    id: str
+    name: str
+    time: datetime
+    users: list[int]
+    remarks: str
+
+
+@dataclass()
+class meeting_channel:
+    """Store the information about a meeting channel"""
+    id: int
+    status: bool
 
 
 def unflatten_users(users: str) -> list[int]:
@@ -89,3 +106,43 @@ def adjust_meeting(meeting_obj: meeting) -> bool:
         # commit if allowed
         session.commit()
         return True
+
+
+def load_all_meetings() -> list[meeting]:
+    """Load all meetings from the db
+
+    :return: List of meeting objects
+    """
+    # set up sessions
+    with Session(engine) as session:
+        cursor = session.execute(text("SELECT * FROM meetings"))
+        rows = cursor.all()
+
+        meetings = []
+
+        # iterate through rows
+        for r in rows:
+            new_meeting = meeting(r.id, r.name, r.time, r.users, r.notes)
+            meetings.append(new_meeting)
+
+        return meetings
+
+
+def load_all_meeting_ids() -> list[meeting_channel]:
+    """Load all meeting_channels from the db
+
+    :return: List of meeting objects
+    """
+    # set up sessions
+    with Session(engine) as session:
+        cursor = session.execute(text("SELECT * FROM meeting_channels"))
+        rows = cursor.all()
+
+        meetings = []
+
+        # iterate through rows
+        for r in rows:
+            new_meeting = meeting_channel(r.id, r.status)
+            meetings.append(new_meeting)
+
+        return meetings
