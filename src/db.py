@@ -2,7 +2,7 @@ import datetime
 import os
 
 # TODO: Optimize imports
-from cogs.meeting_information import meeting
+from dataclasses import dataclass
 
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.sql import exists
@@ -14,6 +14,14 @@ import psycopg2
 
 engine = sqlalchemy.create_engine(os.environ["DB_URL"])
 
+@dataclass()
+class meeting:
+    """Store the information about a meeting"""
+    id: str
+    name: str
+    time: datetime
+    users: list[int]
+    remarks: str
 
 def unflatten_users(users: str) -> list[int]:
     """Unflatten users into user ids
