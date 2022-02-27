@@ -4,3 +4,4 @@ SQLAlchemy~=1.4.31
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
+pygsheets~=2.0.5

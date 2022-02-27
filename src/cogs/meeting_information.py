@@ -1,3 +1,5 @@
+import operator
+
 import discord
 from datetime import datetime, timezone, timedelta
 
@@ -10,15 +12,16 @@ from src.db import meeting
 import src.db as db
 
 
+def meeting_sort(mtgs: list[meeting]) -> list[meeting]:
+    """Organize meetings by start time
+
+    :param mtgs: List of unorganized meetings
+    :return: Organized list of meetings
+    """
+    return sorted(mtgs, key=operator.attrgetter("time"))
 
 
-
-# initial vars
-channels = {}
-meetings: list[meeting] = []
-
-
-def create_meeting_embed(message: str, mtg: meeting) -> discord.Embed:
+def create_meeting_embed(self, message: str, mtg: meeting) -> discord.Embed:
     """Create a meeting embed for after a meeting operation
 
     :param message: Message to accompany embed
@@ -31,9 +34,18 @@ def create_meeting_embed(message: str, mtg: meeting) -> discord.Embed:
     emb.add_field(name="Meeting ID:", value=mtg.id, inline=False)
     emb.add_field(name="Meeting Name:", value=mtg.name, inline=False)
     emb.add_field(name="Time:", value=mtg.time.strftime("%m/%d/%Y %H:%M:%S"), inline=False)
+    emb.add_field(name="Users", value=str(len(mtg.id)) + " user(s) associated.", inline=False)
     emb.set_footer(text="Meeting ID: " + mtg.id)
 
     return emb
+
+
+def allocate_meetings(
+
+# initial vars
+channels = {}
+meetings: list[meeting] = meeting_sort(db.load_all_meetings())
+print(meetings)
 
 
 class meeting_cogs(commands.Cog):
@@ -41,7 +53,7 @@ class meeting_cogs(commands.Cog):
 
     def __init__(self, bot):
         super().__init__()
-        self.bot = bot
+        self.bot: discord.Bot = bot
 
     # create a slash command group
     meeting = SlashCommandGroup("meeting", "Manage and create meetings.", guild_ids=guild_ids)
@@ -151,9 +163,6 @@ class meeting_cogs(commands.Cog):
                 ctx.respond(embed=create_meeting_embed("Name adjusted!", meet))
 
         ctx.respond("Meeting ID not found!")
-
-
-
 
 
 def setup(bot: commands.Bot):
