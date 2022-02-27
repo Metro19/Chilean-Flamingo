@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os.path
+import time
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -17,7 +18,7 @@ SCOPES = ['https://www.googleapis.com/auth/documents']
 DOCUMENT_ID = '1I1n25GcTDe7jtDJ7nV0-8pOErjFfDsn5YpNSHq8qtKk'
 
 
-def input_doc(str_import):
+def input_doc(str_import, channel_name, bold_list, ital_list):
     """Shows basic usage of the Docs API.
     Prints the title of a sample document.
     """
@@ -50,15 +51,16 @@ def input_doc(str_import):
         print(err)
 
     service = build('docs', 'v1', credentials=creds)
-    title = 'My Document'
     body = {
-        'title': title
+        'title': channel_name + " (" + time.strftime(format("%m/%d/%Y")) + ")"
     }
     doc = service.documents().create(body=body).execute()
     docID = doc.get('documentId')
     print('Created document with title: {0}'.format(
         doc.get('title')))
 
+    loc = 1
+    loc += 1000
     requests = [
         {
             'insertText': {
@@ -69,5 +71,40 @@ def input_doc(str_import):
             }
         }
     ]
-    print(docID)
+    print(len(str_import))
     adding = service.documents().batchUpdate(documentId=docID, body={'requests': requests}).execute()
+
+
+    formattingList = []
+
+    for b in bold_list:
+        formattingList.append({
+            'updateTextStyle': {
+                'range': {
+                    'startIndex': b[0] + 1,
+                    'endIndex': b[1] + 1
+                },
+                'textStyle': {
+                    'bold': True
+                },
+                'fields': 'bold'
+            }
+        })
+    adding = service.documents().batchUpdate(documentId=docID, body={'requests': formattingList}).execute()
+
+    formattingList = []
+    for i in ital_list:
+        formattingList.append({
+            'updateTextStyle': {
+                'range': {
+                    'startIndex': i[0] + 1,
+                    'endIndex': i[1] + 1
+                },
+                'textStyle': {
+                    'italic': True
+                },
+                'fields': 'italic'
+            }
+        })
+
+    adding = service.documents().batchUpdate(documentId=docID, body={'requests': formattingList}).execute()

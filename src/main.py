@@ -1,4 +1,6 @@
 import os
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 import discord
 from discord.ext import commands
