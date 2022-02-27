@@ -16,6 +16,11 @@ class sheets_import_cog(commands.Cog):
 
     @slash_command(name="pull_discordids_from_sheets", guild_ids=guild_ids)
     async def pull_discordids_from_sheets(self, ctx):
+        """Pull the discordIDs from sheets
+
+                :param ctx:
+                :return:
+                """
         # pulling the column of the google sheet
         string_id_array = sheets.pull_column()
 
